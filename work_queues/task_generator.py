@@ -2,7 +2,7 @@ from json import dumps
 import pika
 
 
-QUEUE_NAME = "work_queue"
+QUEUE_NAME = "work_queue_durable"
 
 
 if __name__ == '__main__':
@@ -10,7 +10,7 @@ if __name__ == '__main__':
         ID = 0
         connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
         channel = connection.channel()
-        channel.queue_declare(queue=QUEUE_NAME)
+        channel.queue_declare(queue=QUEUE_NAME, durable=True)
         while True:
             task_name = input("Task name: ")
             execute_time = int(input("Execute time: "))
@@ -24,7 +24,10 @@ if __name__ == '__main__':
                 channel.basic_publish(
                     exchange='',
                     routing_key=QUEUE_NAME,
-                    body=dumps(message).encode()
+                    body=dumps(message).encode(),
+                    properties=pika.BasicProperties(
+                        delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
+                    )
                 )
                 print(f"Send ID: {ID}")
                 ID += 1

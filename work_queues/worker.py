@@ -3,7 +3,7 @@ from time import sleep
 import pika
 
 
-QUEUE_NAME = "work_queue"
+QUEUE_NAME = "work_queue_durable"
 
 
 def callback(ch, method, properties, body):
@@ -19,7 +19,8 @@ if __name__ == '__main__':
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
         channel = connection.channel()
-        channel.queue_declare(queue=QUEUE_NAME)
+        channel.basic_qos(prefetch_count=1)
+        channel.queue_declare(queue=QUEUE_NAME, durable=True)
         channel.basic_consume(
             queue=QUEUE_NAME,
             on_message_callback=callback
