@@ -1,4 +1,5 @@
 from json import dumps
+from typing import Optional
 import pika
 
 
@@ -6,8 +7,9 @@ QUEUE_NAME = "work_queue_durable"
 
 
 if __name__ == '__main__':
+    ID = 0
+    connection: Optional[pika.BlockingConnection] = None
     try:
-        ID = 0
         connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
         channel = connection.channel()
         channel.queue_declare(queue=QUEUE_NAME, durable=True)
@@ -32,4 +34,7 @@ if __name__ == '__main__':
                 print(f"Send ID: {ID}")
                 ID += 1
     except KeyboardInterrupt:
-        pass
+        print("Exit")
+    finally:
+        if connection is not None:
+            connection.close()
